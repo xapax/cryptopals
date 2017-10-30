@@ -1,5 +1,9 @@
 import collections 
 
+points = {
+"a": 100,
+"b": 99,
+}
 
 fil = open("cp4-file.txt", "r")
 
@@ -16,7 +20,8 @@ for line in fil:
            #print xor
 
         print res
-
+        tolowercase
+        count_letters
         d = collections.defaultdict(int)
         for c in res:
             d[c] += 1
