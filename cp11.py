@@ -1,18 +1,19 @@
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+"""
+In this challenge we need to write a program that can detect if ciphertext was create using ECB or CBC
+
+This should be pretty easy, since the blocks in ECB will produce the same ciphertext is the same plaintext is inputed.
+
+"""
+
+
 from Crypto.Cipher import AES
-
-"""
-In this challenge we could just use the crypto-module to encrypt/decrypt in cbc-mode
-But that would be cheating. So instead we are going to do it semi-manually.
-By first XOR the plaintext against the IV, and then encrypt the result with the key "YELLOW SUBMARINE"
-
-On the following iteratations we will XOR the plaintext against the ciphertext from the previous block.
-"""
-
-
 import binascii
+import random
 
 IV = "0" * 16
 key = "YELLOW SUBMARINE"
@@ -27,6 +28,13 @@ for line in ct:
 
 b64dec = b64blob.decode("base64")
 
+
+
+def random_AES_key():
+   print random.random()*1000 
+
+
+random_AES_key()
  
 # Divide up the plaintext in chunks or arbitrary length
 def chunkup(text,length):
@@ -95,4 +103,4 @@ pt = padding("YELLOW SUBMARINEAAAAAAAAAAAAAAAABBBBBBBBB", 16)
 encrypted_text = encrypt(pt, key)
 #encrypted_text = encrypt("YELLOW SUBMARINE", key)
 #print encrypted_text
-print decrypt(encrypted_text, key)
+#print decrypt(encrypted_text, key)
