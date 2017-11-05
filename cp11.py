@@ -14,9 +14,10 @@ This should be pretty easy, since the blocks in ECB will produce the same cipher
 from Crypto.Cipher import AES
 import binascii
 import random
+from random import randint
 
-IV = "0" * 16
-key = "YELLOW SUBMARINE"
+#IV = "0" * 16
+IV = str(randint(1000000000000000, 9999999999999999))
 
 
 b64blob = ""
@@ -29,17 +30,19 @@ for line in ct:
 b64dec = b64blob.decode("base64")
 
 
-
 def random_AES_key():
-   print random.random()*1000 
+    return str(randint(1000000000000000, 9999999999999999))
+
+#random_AES_key()
 
 
-random_AES_key()
+
  
 # Divide up the plaintext in chunks or arbitrary length
 def chunkup(text,length):
+    #print text
+    #print length
     blocks=[text[x:x+length] for x in xrange(0,len(text),length)]
-    #print len(blocks)
     return blocks
 
 # XOR the blocks, to make it CBC-like
@@ -51,8 +54,8 @@ def xor_blocks(block, IV):
     return res
 
 # 
-def decrypt(ct, key):
-    blocks = chunkup(ct,16)
+def decrypt_CBC(ct, key):
+    blocks = chunkup(ct,len(key))
     decrypted = [IV]
     counter = 0
     result = []
@@ -66,8 +69,8 @@ def decrypt(ct, key):
     del decrypted[0]
     return "".join(result)
 
-def encrypt(pt, key):
-    blocks = chunkup(pt, 16)
+def encrypt_CBC(pt, key):
+    blocks = chunkup(pt, len(key))
     #print blocks
     encrypted = [IV]
     counter = 0
@@ -83,6 +86,17 @@ def encrypt(pt, key):
     return "".join(encrypted)
 
 
+def decrypt_ECB(ct, key):
+    obj = AES.new(key, AES.MODE_ECB)
+    return obj.decrypt(ct)
+
+
+
+def encrypt_ECB(pt, key):
+    print len(pt)
+    obj = AES.new(key, AES.MODE_ECB)
+    return obj.encrypt(pt)
+
 
 
 """
@@ -95,12 +109,41 @@ def padding(pt, blocklength):
         to_add = format(diff, '02')
         pt += binascii.a2b_hex(to_add)*diff
         return pt
+    else:
+        # THIS SHOULD BE FIXED TO ADD AN ENTIRE NEW BLOCK with 16
+        return pt
 
 
+def encryption_oracle(pt):
+    key = random_AES_key()
+    # Add 5-10 random bytes to the pt
+    random_pt = "".join([chr(randint(0,255)) for x in range(0,randint(5,10))])
+    pt = random_pt + pt + random_pt 
+    if randint(0,1) == 0:
+        print "ECB"
+        return encrypt_ECB(padding(pt,len(key)),key)
+    else:
+        print "CBC"
+        return encrypt_CBC(padding(pt,len(key)),key)
 
+def find_mode(pct):
+    ct =[pct[x:x+16] for x in xrange(0,len(pct),16)]
+    for num in range(len(ct)):
+        for x in range(num+1,len(ct)):
+            if num+x+1 > len(ct):
+                print "It is CBC"
+                return
+            if ct[num] == ct[num+x]:
+                print "It is ECB"
+                return
+
+
+ciphertext = encryption_oracle("YELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINEYELLOW SUBMARINE")
+print ciphertext
+find_mode(ciphertext)
 #print decrypt(res_string, key)
-pt = padding("YELLOW SUBMARINEAAAAAAAAAAAAAAAABBBBBBBBB", 16)
-encrypted_text = encrypt(pt, key)
+#pt = padding("YELLOW SUBMARINEAAAAAAAAAAAAAAAABBBBBBBBB", 16)
+#encrypted_text = encrypt(pt, key)
 #encrypted_text = encrypt("YELLOW SUBMARINE", key)
 #print encrypted_text
 #print decrypt(encrypted_text, key)
